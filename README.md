@@ -8,7 +8,7 @@ shared logic cores with thin, disposable mounts:
 |---|---|---|
 | **Verbs** — the portable logic core | `scripts/` | Plain bash, hand-runnable with no forge at all: `./scripts/deploy.sh deploy@host app image`. All CI/CD logic lives here — this is what passes the degradation test. |
 | **Wrappers** — thin GitHub mounts | `.github/workflows/` | `workflow_call` workflows that mount a verb on the forge's events: checkout, secrets plumbing, one invocation. Forge-specific, logic-free, disposable. |
-| **Ansible collection** — the shared platform roles | `ansible/` | `plexus_ms.itops`: base hardening, docker, caddy ingress, per-app deploy, alloy observability. Tenants bind these to their own inventory — a tenant playbook is to the roles what a wrapper is to a verb. |
+| **Ansible collection** — the shared platform roles | `ansible/` | `plexus.itops`: base hardening, docker, caddy ingress, per-app deploy, alloy observability. Tenants bind these to their own inventory — a tenant playbook is to the roles what a wrapper is to a verb. |
 
 One version tag (`v1`, …) governs all three classes atomically: a wrapper always
 runs the verb from its own commit (`github.job_workflow_sha`), and tenants pin
