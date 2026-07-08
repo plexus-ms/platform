@@ -7,7 +7,7 @@ name: deploy
 #   deploy:
 #     needs: ci
 #     if: github.ref == 'refs/heads/main'
-#     uses: plexus-ms/ci/.github/workflows/deploy.yml@v1
+#     uses: plexus-ms/itops/.github/workflows/deploy.yml@v1
 #     with:
 #       app: plexus-website
 #       image: ${{ needs.ci.outputs.image }}
@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          repository: plexus-ms/ci
+          repository: plexus-ms/itops
           ref: ${{ github.job_workflow_sha }}
       - name: Load SSH key
         run: |
