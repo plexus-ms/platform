@@ -30,7 +30,7 @@ on:
         required: true
         type: string
       health-url:
-        description: Healthcheck URL polled on the host. Defaults to the §4 path.
+        description: Healthcheck URL polled on the host. Defaults to the § 6 PLX path.
         required: false
         type: string
         default: ''

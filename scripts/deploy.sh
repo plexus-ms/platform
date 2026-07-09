@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Plexus deploy verb — PLEXUS.md §5. A stateless procedure, not a system:
+# Plexus deploy verb — § 7 PLX. A stateless procedure, not a system:
 #
 #   ssh → docker compose pull → mise migrate → docker compose up -d
 #       → poll /healthz → on failure: re-up the previous image, exit non-zero

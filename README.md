@@ -1,6 +1,6 @@
 # itops (plexus-ms/itops)
 
-The Paved Road's shared ITOps building blocks (PLEXUS.md §5), referenced by
+The Paved Road's shared ITOps building blocks (§ 7 PLX), referenced by
 version tag from every tenant repo. Three artifact classes, one layering rule —
 shared logic cores with thin, disposable mounts:
 
@@ -44,4 +44,4 @@ collections:
 ```
 
 Fix once → move the tag (+ bump `galaxy.yml`) → every tenant picks it up
-(PLEXUS.md §6).
+(§ 8 PLX).
