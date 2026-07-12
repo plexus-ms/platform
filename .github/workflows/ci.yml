@@ -1,17 +1,25 @@
 name: plexus-ci
 
-# Reusable CI for Plexus apps: biome → typecheck → test → build & push
-# a container image to the caller's GHCR namespace, tagged with the git SHA.
+# Reusable CI for Plexus apps: the contract verbs (check → test → build), then
+# package the prebuilt artifact into a runtime image and push it to the
+# caller's GHCR namespace, tagged with the git SHA. CI speaks only the verbs;
+# what runs behind them is the repo's business, and the image build compiles
+# nothing — the app's Dockerfile is runtime-only packaging (§ 5 PLX).
 
 on:
   workflow_call:
     inputs:
       app:
-        description: Workspace app name (pnpm filter + mise dir under apps/).
+        description: Required. Workspace app name (the dir under `apps/`, e.g. `website`).
         required: true
         type: string
+      build:
+        description: Build and push an image (set to `true` for environment-branch pushes).
+        required: false
+        type: boolean
+        default: false
       image-name:
-        description: Image name under the caller's GHCR org. Defaults to `app`.
+        description: Image name under the tenant's GHCR org. Defaults to the value of `app`.
         required: false
         type: string
         default: ''
@@ -20,72 +28,60 @@ on:
         required: false
         type: string
         default: ''
-      push:
-        description: Build and push the image (set false for PRs).
-        required: false
-        type: boolean
-        default: true
     outputs:
-      image:
+      image-ref:
         description: Full image ref that was built (name:sha).
-        value: ${{ jobs.image.outputs.image }}
+        value: ${{ jobs.ci.outputs.image-ref }}
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
-      - run: pnpm install --frozen-lockfile
-      - run: mise :biome
-      - run: mise :verify
-
-  image:
-    needs: check
-    if: ${{ inputs.push }}
+  ci:
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ steps.meta.outputs.image }}
+      image-ref: ${{ steps.meta.outputs.image-ref }}
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v4
-        with:
-          install: false
-      - id: toolchain
+      - run: mise :check
+      - run: mise :test
+
+      # Everything below runs only when an image is wanted (environment-branch
+      # pushes) — PRs stop after the verbs.
+      - if: ${{ inputs.build }}
+        run: mise :build ${{ inputs.app }}
+      # NODE_VERSION (the runtime base image tag) is read the way every other
+      # consumer reads it — from mise's env.
+      - if: ${{ inputs.build }}
         run: |
           eval "$(mise env -s bash)"
-          {
-            echo 'build-args<<EOF'
-            if [ -n "${NODE_VERSION:-}" ]; then echo "NODE_VERSION=$NODE_VERSION"; fi
-            if [ -n "${PNPM_VERSION:-}" ]; then echo "PNPM_VERSION=$PNPM_VERSION"; fi
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-      - id: meta
+          echo "NODE_VERSION=$NODE_VERSION" >> "$GITHUB_ENV"
+      - if: ${{ inputs.build }}
+        id: meta
         # Image lives under the CALLER's org so the repo's own GITHUB_TOKEN can
         # push it (no cross-org PAT). Tenant app → tenant-org registry.
         run: |
           name='${{ inputs.image-name }}'
           [ -n "$name" ] || name='${{ inputs.app }}'
           owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
-          echo "image=ghcr.io/$owner/$name:${{ github.sha }}" >> "$GITHUB_OUTPUT"
-      - uses: docker/login-action@v3
+          echo "image-ref=ghcr.io/$owner/$name:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+      - if: ${{ inputs.build }}
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+      - if: ${{ inputs.build }}
+        uses: docker/setup-buildx-action@v3
+      - if: ${{ inputs.build }}
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ${{ inputs.dockerfile != '' && inputs.dockerfile || format('apps/{0}/Dockerfile', inputs.app) }}
           push: true
-          tags: ${{ steps.meta.outputs.image }}
+          tags: ${{ steps.meta.outputs.image-ref }}
           build-args: |
             APP=${{ inputs.app }}
-            ${{ steps.toolchain.outputs.build-args }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            NODE_VERSION=${{ env.NODE_VERSION }}

@@ -10,7 +10,7 @@ name: deploy
 #     uses: plexus-ms/itops/.github/workflows/deploy.yml@v1
 #     with:
 #       app: plexus-website
-#       image: ${{ needs.ci.outputs.image }}
+#       image-ref: ${{ needs.ci.outputs.image-ref }}
 #       host: deploy@<your-host>
 #     secrets:
 #       ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
@@ -21,7 +21,7 @@ on:
       app:
         required: true
         type: string
-      image:
+      image-ref:
         description: Full image ref to deploy (name:tag), e.g. ci's output.
         required: true
         type: string
@@ -60,4 +60,4 @@ jobs:
       - name: Deploy
         env:
           PLEXUS_HEALTH_URL: ${{ inputs.health-url }}
-        run: bash scripts/deploy.sh '${{ inputs.host }}' '${{ inputs.app }}' '${{ inputs.image }}'
+        run: bash scripts/deploy.sh '${{ inputs.host }}' '${{ inputs.app }}' '${{ inputs.image-ref }}'

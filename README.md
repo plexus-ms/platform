@@ -18,7 +18,7 @@ alone is a silent no-op on reinstall (`--force` also works).
 
 | Workflow | What |
 |---|---|
-| `.github/workflows/ci.yml` | App CI: biome → typecheck → test → build & push image to the caller's GHCR namespace, tagged with the git SHA. |
+| `.github/workflows/ci.yml` | App CI: check → test → build & push image to the caller's GHCR namespace, tagged with the git SHA. |
 | `.github/workflows/deploy.yml` | Mounts the deploy verb (`scripts/deploy.sh`) on the push event; the tenant supplies host + SSH key. |
 
 This repo deliberately has **no CI of its own** — GitHub requires callable
