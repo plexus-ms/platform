@@ -22,7 +22,7 @@ on:
         type: string
         default: ''
       dockerfile:
-        description: Dockerfile path. Defaults to apps/<app>/Dockerfile.
+        description: Dockerfile path. Defaults to apps/<app>/docker/Dockerfile.
         required: false
         type: string
         default: ''
@@ -69,7 +69,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: ${{ inputs.dockerfile != '' && inputs.dockerfile || format('apps/{0}/Dockerfile', inputs.app) }}
+          file: ${{ inputs.dockerfile != '' && inputs.dockerfile || format('apps/{0}/docker/Dockerfile', inputs.app) }}
           push: true
           tags: ${{ steps.meta.outputs.image-ref }}
           build-args: |
