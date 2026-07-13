@@ -25,7 +25,7 @@ APP="${2:?usage: deploy.sh <ssh-host> <app> <image-ref>}"
 IMAGE="${3:?usage: deploy.sh <ssh-host> <app> <image-ref>}"
 
 # Overridable knobs (sane defaults for the stateless-app profile).
-APP_DIR="${PLEXUS_APP_DIR:-/opt/plexus/$APP}"
+APP_DIR="${PLEXUS_APP_DIR:-/opt/stacks/$APP}"
 HEALTH_URL="${PLEXUS_HEALTH_URL:-http://127.0.0.1:3000/healthz}"
 RETRIES="${PLEXUS_HEALTH_RETRIES:-30}"
 
