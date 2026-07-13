@@ -1,1 +1,1 @@
-# § 7 PLX – plexus-ms/platform
+# plexus-ms/platform (§ 7 PLX)
