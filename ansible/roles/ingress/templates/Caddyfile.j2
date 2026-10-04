@@ -28,7 +28,12 @@
 {% if app.healthz is defined and app.healthz != '/healthz' %}
 		respond {{ app.healthz }} 403
 {% endif %}
-		reverse_proxy 127.0.0.1:{{ app.loopback_port }}
+		# Caddy forwards X-Forwarded-For/-Proto/-Host but not the port; apps
+		# that build absolute URLs (Next.js redirects) otherwise fall back to
+		# their own container port. local.port = the listener the client hit.
+		reverse_proxy 127.0.0.1:{{ app.loopback_port }} {
+			header_up X-Forwarded-Port {http.request.local.port}
+		}
 	}
 {% endfor %}
 {% if apps | selectattr('path', 'undefined') | list | length == 0 %}
