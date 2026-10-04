@@ -1,0 +1,40 @@
+# platform is a plexus-ms repo and eats the initiative's own cooking (Manual,
+# "The repos"): tools pinned here, verbs as mise tasks, checks wired through hk.
+# The roles run as root on every tenant's hosts, so they are linted and
+# syntax-checked mechanically here, never on the honor system.
+
+# Verbs are asked as `mise :verb` like in every Plexus repo (§ 4.1 PLX); that
+# form needs the root marker even without sub-projects.
+monorepo_root = true
+
+[tools]
+hk = "latest" # Git hooks
+uv = "latest" # required for ansible
+ansible = { version = "latest", uvx = true } # syntax check
+"pipx:ansible-lint" = { version = "latest", uvx = true } # the roles' static check
+
+[hooks]
+postinstall = "hk install --mise"
+
+# Contract verbs (§ 5.1 PLX) — the ones a collection repo has no use for exist
+# and pass as documented no-ops.
+
+[tasks.dev]
+description = "No-op: nothing to start; the roles are applied by tenant playbooks"
+run = 'echo "dev: nothing to start in platform"'
+
+[tasks.build]
+description = "No-op: the collection ships as source, installed by tag"
+run = 'echo "build: nothing to build in platform"'
+
+[tasks.check]
+description = "Static checks: ansible-lint over the collection, and a syntax check of a playbook that lists every role"
+run = [
+    'ansible-lint ansible',
+    'ANSIBLE_ROLES_PATH=ansible/roles ansible-playbook --syntax-check -i localhost, tests/all-roles.yml',
+    './tests/all-roles-listed.sh',
+]
+
+[tasks.test]
+description = "No-op: the roles are exercised by the dogfood tenant's playbook runs"
+run = 'echo "test: nothing to test in platform"'
