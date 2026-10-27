@@ -29,6 +29,10 @@ run = 'echo "dev: nothing to start in platform"'
 description = "No-op: the collection ships as source, installed by tag"
 run = 'echo "build: nothing to build in platform"'
 
+[tasks.verify]
+description = "Perform all steps that verify code quality: check, then test"
+run = ['mise run check', 'mise run test']
+
 [tasks.check]
 description = "Static checks: ansible-lint over the collection, and a syntax check of a playbook that lists every role"
 run = [
